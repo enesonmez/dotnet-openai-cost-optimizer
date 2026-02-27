@@ -1,0 +1,6 @@
+@DotNetOpenAICostOptimizer_HostAddress = http://localhost:5140
+
+GET {{DotNetOpenAICostOptimizer_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
