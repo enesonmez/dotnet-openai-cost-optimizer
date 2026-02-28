@@ -46,6 +46,10 @@ Sistem, gelen prompt'u doğrudan OpenAI'a göndermek yerine şu adımları takip
    cd AiPerformanceDemo
    dotnet run
    ```
+Veya docker-compose ile hızlı şekilde projeyi up edebilirsiniz.
+   ```bash
+  docker-compose up -d
+  ```
 ---
 
 ### 💻 Kullanım Örneği

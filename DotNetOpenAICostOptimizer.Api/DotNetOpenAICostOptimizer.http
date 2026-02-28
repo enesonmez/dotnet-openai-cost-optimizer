@@ -1,6 +1,33 @@
 @DotNetOpenAICostOptimizer_HostAddress = http://localhost:5140
 
-GET {{DotNetOpenAICostOptimizer_HostAddress}}/weatherforecast/
-Accept: application/json
+### 1. Senaryo: İlk Sorgu (Cache Miss)
+# Bu istek OpenAI'a gidecek. 2-3 saniye sürmesi ve maliyet oluşturması beklenir.
+POST {{DotNetOpenAICostOptimizer_HostAddress}}/api/ai/ask
+Content-Type: application/json
+
+{
+  "prompt": ".NET Core ve Redis kullanarak performans optimizasyonu nasıl yapılır?"
+}
 
 ###
+
+### 2. Senaryo: Tekrar Sorgusu (Cache Hit)
+# Aynı prompt'u tekrar gönderiyoruz. 
+# Redis sayesinde yanıtın <20ms içinde ve "0" maliyetle gelmesi beklenir.
+POST {{DotNetOpenAICostOptimizer_HostAddress}}/api/ai/ask
+Content-Type: application/json
+
+{
+  "prompt": ".NET Core ve Redis kullanarak performans optimizasyonu nasıl yapılır?"
+}
+
+###
+
+### 3. Senaryo: Hatalı İstek Testi (Validation)
+# Boş prompt göndererek API'nin hata yönetimini test ediyoruz.
+POST {{DotNetOpenAICostOptimizer_HostAddress}}/api/ai/ask
+Content-Type: application/json
+
+{
+  "prompt": ""
+}

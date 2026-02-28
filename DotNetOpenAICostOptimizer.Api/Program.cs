@@ -1,6 +1,36 @@
+using DotNetOpenAICostOptimizer.Models;
+using DotNetOpenAICostOptimizer.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Options;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.Configure<OpenAiSettings>(builder.Configuration.GetSection("OpenAiSettings"));
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+});
+
+// Mock Service Implemented
+builder.Services.AddScoped<IOpenAiService>(provider => 
+{
+    var realService = new OpenAiMockService();
+    var cache = provider.GetRequiredService<IDistributedCache>();
+    return new CachedOpenAiService(realService, cache);
+});
+
+// Real Service Implemented
+// builder.Services.AddScoped<IOpenAiService>(provider => 
+// {
+//     var settings = provider.GetRequiredService<IOptions<OpenAiSettings>>();
+//     var realService = new OpenAiService(settings);
+//     var cache = provider.GetRequiredService<IDistributedCache>();
+//     return new CachedOpenAiService(realService, cache);
+// });
+
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -14,28 +44,37 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.MapPost("/api/ai/ask",
+        async ([FromBody] PromptRequest request, IOpenAiService aiService, CancellationToken cancellationToken) =>
+        {
+            if (request is null || string.IsNullOrEmpty(request.Prompt))
+                return Results.BadRequest();
 
-app.MapGet("/weatherforecast", () =>
-    {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast");
+            try
+            {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                var response = await aiService.AskAsync(request.Prompt, cancellationToken);
+                watch.Stop();
 
+                return Results.Ok(new
+                {
+                    Result = response,
+                    ElapsedTime = watch.ElapsedMilliseconds
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                return Results.StatusCode(499); // Client Closed Request
+            }
+            catch (Exception)
+            {
+                return Results.Problem("The AI service is currently unavailable. Please try again later.");
+            }
+        })
+    .WithName("AskAi")
+    .WithSummary("OpenAI'dan yanıt alır (Redis Cache destekli)")
+    .WithDescription("Eğer prompt daha önce sorulmuşsa Redis üzerinden milisaniyeler içinde yanıt döner.")
+    .Produces(StatusCodes.Status200OK)
+    .Produces(StatusCodes.Status400BadRequest);
+    
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

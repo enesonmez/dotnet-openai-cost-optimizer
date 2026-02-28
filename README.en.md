@@ -46,6 +46,11 @@ Instead of sending the incoming prompt directly to OpenAI, the system follows th
    cd AiPerformanceDemo
    dotnet run
    ```
+Or you can quickly deploy the project using Docker Compose.
+   ```bash
+  docker-compose up -d
+  ```
+
 ---
    
 ### 💻 Usage Example
