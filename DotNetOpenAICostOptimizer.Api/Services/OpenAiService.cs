@@ -8,15 +8,23 @@ public class OpenAiService : IOpenAiService
 {
     private readonly ChatClient _client;
     
-    public OpenAiService(IOptions<OpenAiSettings> settings)
+    public OpenAiService(ChatClient client)
     {
-        _client = new ChatClient(model: settings.Value.Model, apiKey: settings.Value.ApiKey);
+        _client = client;
     }
     
     public async Task<string> AskAsync(string prompt, CancellationToken token = default)
     {
-        ChatCompletion completion = await _client.CompleteChatAsync(prompt);
+        var messages = new List<ChatMessage>
+        {
+            new UserChatMessage(prompt)
+        };
+
+        ChatCompletion completion = await _client.CompleteChatAsync(
+            messages, 
+            cancellationToken: token
+        );
         
-        return completion != null && completion.Content.Count > 0 ? completion.Content[0].Text : string.Empty;
+        return completion is { Content.Count: > 0 } ? completion.Content[0].Text : string.Empty;
     }
 }

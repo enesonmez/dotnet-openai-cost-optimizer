@@ -3,6 +3,7 @@ using DotNetOpenAICostOptimizer.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
+using OpenAI.Chat;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,10 +23,16 @@ builder.Services.AddScoped<IOpenAiService>(provider =>
 });
 
 // Real Service Implemented
-// builder.Services.AddScoped<IOpenAiService>(provider => 
+// builder.Services.AddSingleton<ChatClient>(provider =>
 // {
 //     var settings = provider.GetRequiredService<IOptions<OpenAiSettings>>();
-//     var realService = new OpenAiService(settings);
+//     return new ChatClient(model: settings.Value.Model, apiKey: settings.Value.ApiKey);
+// });
+//
+// builder.Services.AddScoped<IOpenAiService>(provider => 
+// {
+//     var openaiClient = provider.GetRequiredService<ChatClient>();
+//     var realService = new OpenAiService(openaiClient);
 //     var cache = provider.GetRequiredService<IDistributedCache>();
 //     return new CachedOpenAiService(realService, cache);
 // });
