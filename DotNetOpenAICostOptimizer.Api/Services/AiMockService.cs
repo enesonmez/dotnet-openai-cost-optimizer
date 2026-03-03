@@ -2,7 +2,7 @@ using DotNetOpenAICostOptimizer.Services;
 
 namespace DotNetOpenAICostOptimizer.Services;
 
-public class OpenAiMockService : IOpenAiService
+public class AiMockService : IAiProvider
 {
     public async Task<string> AskAsync(string prompt, CancellationToken token = default)
     {

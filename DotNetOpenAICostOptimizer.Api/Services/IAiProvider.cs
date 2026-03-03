@@ -1,6 +1,6 @@
 namespace DotNetOpenAICostOptimizer.Services;
 
-public interface IOpenAiService
+public interface IAiProvider
 {
     Task<string> AskAsync(string prompt, CancellationToken token = default);
 }

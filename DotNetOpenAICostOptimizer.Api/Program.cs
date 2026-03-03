@@ -15,11 +15,11 @@ builder.Services.AddStackExchangeRedisCache(options =>
 });
 
 // Mock Service Implemented
-builder.Services.AddScoped<IOpenAiService>(provider => 
+builder.Services.AddScoped<IAiProvider>(provider => 
 {
-    var realService = new OpenAiMockService();
+    var realService = new AiMockService();
     var cache = provider.GetRequiredService<IDistributedCache>();
-    return new CachedOpenAiService(realService, cache);
+    return new CachedAiService(realService, cache);
 });
 
 // Real Service Implemented
@@ -29,12 +29,12 @@ builder.Services.AddScoped<IOpenAiService>(provider =>
 //     return new ChatClient(model: settings.Value.Model, apiKey: settings.Value.ApiKey);
 // });
 //
-// builder.Services.AddScoped<IOpenAiService>(provider => 
+// builder.Services.AddScoped<IAiProvider>(provider => 
 // {
 //     var openaiClient = provider.GetRequiredService<ChatClient>();
 //     var realService = new OpenAiService(openaiClient);
 //     var cache = provider.GetRequiredService<IDistributedCache>();
-//     return new CachedOpenAiService(realService, cache);
+//     return new CachedAiService(realService, cache);
 // });
 
 
@@ -52,7 +52,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapPost("/api/ai/ask",
-        async ([FromBody] PromptRequest request, IOpenAiService aiService, CancellationToken cancellationToken) =>
+        async ([FromBody] PromptRequest request, IAiProvider aiService, CancellationToken cancellationToken) =>
         {
             if (request is null || string.IsNullOrEmpty(request.Prompt))
                 return Results.BadRequest();

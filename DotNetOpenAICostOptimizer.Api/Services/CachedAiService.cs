@@ -5,13 +5,13 @@ using Microsoft.Extensions.Caching.Distributed;
 
 namespace DotNetOpenAICostOptimizer.Services;
 
-public class CachedOpenAiService : IOpenAiService
+public class CachedAiService : IAiProvider
 {
-    private readonly IOpenAiService _innerService;
+    private readonly IAiProvider _innerService;
     private readonly IDistributedCache _cache;
 
 
-    public CachedOpenAiService(IOpenAiService innerService, IDistributedCache cache)
+    public CachedAiService(IAiProvider innerService, IDistributedCache cache)
     {
         _innerService = innerService;
         _cache = cache;

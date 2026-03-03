@@ -1,10 +1,8 @@
-using DotNetOpenAICostOptimizer.Models;
-using Microsoft.Extensions.Options;
 using OpenAI.Chat;
 
 namespace DotNetOpenAICostOptimizer.Services;
 
-public class OpenAiService : IOpenAiService
+public class OpenAiService : IAiProvider
 {
     private readonly ChatClient _client;
     
